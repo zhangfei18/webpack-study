@@ -59,6 +59,7 @@ clean-webpack-plugin :清除打包后的目录
 ## 压缩cs opimize-css-assets-plugin 
 记得修改mode 为 production
 optimization:{// 放优化的内容
+    minimize: true
     minimizer: [//放优化的插件
         new TerserWebpackPlugin({
             parallel: true, // 开启多进程压缩
@@ -114,7 +115,7 @@ postcss只是一个简单的laoder, 其全靠autoprefixer处理
  {
         test: /\.css$/,
         use: ['style-loader', 'postcss-loader'],
-},
+ },
 postcss.config.js 文件
 module.exports = {
   plugins: [
@@ -125,11 +126,139 @@ module.exports = {
 last 10 version
 > 1%
 IE 6 # sory
-
+.browserslistrc 文件中内容也可以直接写在loader后的参数中
 # 处理es6/es7
 
 babel-loader @babel/core @babel/preset-env @babel/preset-react
                 核心      将es6/7转换为es5    将react代码转换成es5
 
-@babel/plugin-proposal-decorators: 处理装饰器 @babel/plugin-proposal-class=properties 处理类
+@babel/plugin-proposal-decorators: 处理装饰器 @babel/plugin-proposal-class-properties 处理类
 
+{
+    test: /\.(js)$/,
+    use: {
+        loader: 'babel-loader',
+        options:{// 给babel-loader传递的参数， 一个loader就是一个函数
+            "presets": [
+                "@babel/preset-env",
+                "@babel/preset-react"
+            ],
+            [
+                "plugins":[
+                    "@babel/plugin-proposal-decorators, {"legacy": true}", //legacy 旧模式
+                    "@babel/plugin-proposal-class-properties, {"loose": true}" // loose 松散模式
+                ]
+            ]
+        }
+    }
+}
+options对象也可以放入.babelrc文件中
+# @babel/runtime
+结局babel为每个文件都会插入辅助代码， 是代码体积过大， 我们可以使用@babel/runtime来避免重复引入
+@babel/plugin-transform-runtime
+@babel/runtime
+{
+    test: /\.(js)$/,
+    use: {
+        loader: 'babel-loader',
+        options:{// 给babel-loader传递的参数， 一个loader就是一个函数
+            "presets": [
+                "@babel/preset-env",
+                "@babel/preset-react"
+            ],
+            [
+                "plugins":[
+                    ["@babel/plugin-proposal-decorators", {"legacy": true}], //legacy 旧模式
+                    ["@babel/plugin-proposal-class-properties", {"loose": true}], // loose 松散模式
+                    ["@babel/plugin-transform-runtime", {
+                        "corejs": false,
+                        "helpers": true,
+                        "regenerator": true,
+                        "useESModule": true
+                    }]
+                ]
+            ]
+        }
+    }
+}
+# eslint
+eslint 
+eslint-loader
+babel-eslint
+.eslintrc文件
+module.exports = {
+    root: true, //是否是根配置， 配置文件可以继承
+    parserOptions:{// 解析器的选项 AST语法树的解析
+        sourceType: 'module',
+        ecmaVersion: "es2015"
+    },
+    env: {//指定运行环境
+        browser: true, // window document
+        node: true // require process
+    },
+    rules: {
+        "indent": ['error', 4]
+    }
+}
+
+{
+    test: //,
+    loader: 'eslint-loader',
+    ecforce: 'pre',//该loader先执行
+    include: path.join(__dirname, 'src'),
+    exclude: /node_modules/
+}
+
+继承规则:
+npm install 
+module.exports = {
+    "parser": "babel-eslint",
+    "extends": 'airbnb',
+    env: {//指定运行环境
+        browser: true, // window document
+        node: true // require process
+    },
+    rules: {//在这里写的规则可以覆盖上面airbnb的规则
+        "no-console": "off"
+    }
+}
+
+# 字体
+{
+    test: /\.woff|ttf|eot|svg|otf$/,
+    use:{
+        loader: 'url-loader',
+        options: {
+            limit: 10 * 1024
+        }
+    }
+}
+css文件：
+@font-face{
+    src: url('路径') format('truetype');
+    font-family: 'HabanoST';
+}
+.welcome{
+    font-size: 1000px,
+    font-family: 'HabanoST'
+}
+
+# devtool
+jar包 http://img.zhufengpeixun.cn/compiler.jar
+sourcemap: https://ruanyifeng.com/blog/2013/01/javascript_source_map.html
+// 调试的时候直接定位到原代码
+devtool: 'eval' // 性能最好 存在@sourceURL
+devtool: 'source-map' // 原始代码 最好的sourcemap质量 性能最慢， 在生产环境下会影响性能。 产生一个.map文件， 能定位到列 建议使用
+devtool: 'eval-source-map' //原始代码 
+devtool: 'cheap-source-map'//转换代码  能定位到行 缺点： 不能调试真正的源码
+devtool: 'cheap-module-source-map'//  能定位到行  能调试真正的源码
+devtool: 'source-module-map'//原始代码  能定位到列  能调试真正的源码
+devtool: 'inline-map'
+
+关键字：
+
+eval: 使用eval包裹代码
+source-map 产生 .map文件
+cheap 不包含列信息
+module 包含loader的sourcemap
+inline 将.map作为DataURL嵌入， 不单独生成.map文件

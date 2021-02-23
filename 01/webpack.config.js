@@ -7,6 +7,7 @@ module.exports = {
         filename: 'bundle.js'
     },
     devServer:{
+        compress: true,//默认开启gzip压缩
         contentBase: path.join(__dirname, 'dist'),//这是产出文件的根目录
         port: 8080,
         host: 'localhost'

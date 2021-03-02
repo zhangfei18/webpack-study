@@ -89,14 +89,18 @@ resolveLoaders:{// 指定如何查找loader
 }
 
 # noParse
-哪些文件不需要解析， 因为这类的文件不需要进行解析并差查看其里面依赖了哪些文件。
+优化： 节省打包的时间
+因为webpack是从入口开始递归解析各个模块中的依赖关系的，
+因此，
+哪些文件不需要解析， 因为这类的文件不需要进行解析并差查看其里面依赖了哪些文件，
+
 module:{
-    noParse: /jquery|lodash/,
+    noParse: /jquery|lodash/,// 表示不需要解析jquery和lodash
     rules: []
 }
 
 # webpack.DefinePlugin
-定义一些常亮
+定义一些常量
 new webpack.DefinePlugin({
     PRODUCTION: JSON.stringfy(true),
     VERSION: '1',
@@ -107,12 +111,13 @@ new webpack.DefinePlugin({
 })
 
 # InnorePlugin
+优化： 减少体积
 用于忽略某些特定的模块， 让webpack不把这些指定的模块打包进去
-new webpack.IgnorePlugin(/^\.\/locale/, /moments$/)
+new webpack.IgnorePlugin(/^\.\/locale/, /moments$/)// 对于moment来说，这样就要手动引入自己需要的语言包了
 
+对应的是excludes和includes
 
 # 区分环境变量
-
 ”scripts“: {
     build: 'webpack',
     build-dev: 'webpack --env=development',
@@ -178,3 +183,30 @@ new BundleAnalyzer({
         "analyz": "webpack-bundle-analyzer --port 8888 ./dist/stas.json"//启动展示打包报告的http服务器
     }
 }
+
+# babel-pollify
+缺点体积大
+引入的三种方式
+require('babel-polyfill')
+import "babel-polyfill"
+module.exports = {entry: ["babel-polyfill", "./app.js"]};
+
+# polyfill-service
+自动化 JavaScript Polyfill 服务
+自动分析请求头中UA, 并写入不同的代码
+<script src="https"//polyfill.io/v3/polyfill.min.js"></script>
+
+# 优化（去除不需要的css类名）
+purgecss-webpack-plugin
+需和 mini-css-extract-plugin
+plugins:[
+    new PurgecssWebpackPlugin({
+        path: glob.sync(`${path.join(__dirnmae, 'src')}/**/*.css`)
+    })
+]
+
+# cdn
+·使用缓存：
+    html文件不使用缓存，放到自己的服务器上，同时关掉自己服务器的缓存
+    静态资源文件js css 图片 放到cnd上缓存起来，并给静态资源文件加上hash值，
+·一个域名的并发请求是有数量限制的，所以我们可以给其加上 域名预解析<link rel=-"dns-prefetch" href="...">

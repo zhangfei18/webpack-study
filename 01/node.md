@@ -40,9 +40,9 @@ new mini-css-extract-plugin({
 file-loader url-loader :可以打包成base64
 {
     test: /\.(png|jpg)$/,
-    use: [loader: 'url-loader', options: {//如果加载的图片大小小于10k， 就把这张图片变为base64
+    use: [{loader: 'url-loader', options: {//如果加载的图片大小小于10k， 就把这张图片变为base64
         limit: 10*1024
-    }]
+    }}]
 }
 # Plugin
 html-webpack-plugin
@@ -55,7 +55,7 @@ new html-webpack-plugin({
 clean-webpack-plugin :清除打包后的目录
 
 # 压缩
-## 压缩js teser-webpack-plugin
+## 压缩js terser-webpack-plugin
 ## 压缩cs opimize-css-assets-plugin 
 记得修改mode 为 production
 optimization:{// 放优化的内容
@@ -157,6 +157,8 @@ options对象也可以放入.babelrc文件中
 结局babel为每个文件都会插入辅助代码， 是代码体积过大， 我们可以使用@babel/runtime来避免重复引入
 @babel/plugin-transform-runtime
 @babel/runtime
+这两个插件是用来弥补babel-polyfill的
+https://www.jianshu.com/p/73ba084795ce
 {
     test: /\.(js)$/,
     use: {
@@ -171,7 +173,7 @@ options对象也可以放入.babelrc文件中
                     ["@babel/plugin-proposal-decorators", {"legacy": true}], //legacy 旧模式
                     ["@babel/plugin-proposal-class-properties", {"loose": true}], // loose 松散模式
                     ["@babel/plugin-transform-runtime", {
-                        "corejs": false,
+                        "corejs": false,// false，2，3如果要启用替代polyfill的功能的话，就需要填数字了 https://babeljs.io/docs/en/babel-plugin-transform-runtime/
                         "helpers": true,
                         "regenerator": true,
                         "useESModule": true
